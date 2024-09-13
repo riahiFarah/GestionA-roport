@@ -1,4 +1,4 @@
-// avion.c contient les définitions (implementations) des fonctions déclarées dans avion.h.
+// avion.c contient les dÃ©finitions (implementations) des fonctions dÃ©clarÃ©es dans avion.h.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +25,8 @@ Avion* recherche_av(Avion* tete, const char* identifiant) {
     }
     return NULL;
 }
+
+
 
 void insere_tete_av(Avion** tete, Avion* nouvel_avion) {
     nouvel_avion->suivant = *tete;
@@ -115,9 +117,13 @@ void suppression_pos_av(Avion** tete, int pos) {
 }
 
 void suppression_av_donne(Avion** tete, const char* identifiant) {
+
+    if (tete == NULL) {
+    printf("La liste des avions est vide.\n");
+    return;
+    }
     Avion* courant = *tete;
     Avion* precedent = NULL;
-
     while (courant != NULL && strcmp(courant->identifiant, identifiant) != 0) {
         precedent = courant;
         courant = courant->suivant;
@@ -125,12 +131,16 @@ void suppression_av_donne(Avion** tete, const char* identifiant) {
 
     if (courant != NULL) {
         if (precedent == NULL) {
-            *tete = courant->suivant; // Suppression de la tête
+            *tete = courant->suivant;
         } else {
             precedent->suivant = courant->suivant;
         }
         free(courant);
+        printf("L'avion avec l'identifiant %s a Ã©tÃ© supprimÃ©.\n", identifiant);
+    } else {
+        printf("Erreur : Avion avec l'identifiant %s non trouvÃ©.\n", identifiant);
     }
+
     printf("Taille actuelle de la liste des avions : %d\n", taille_liste_av(*tete));
 }
 
@@ -139,7 +149,7 @@ void afficher_avion(Avion* avion) {
         printf("Identifiant : %s\n", avion->identifiant);
         printf("Carburant : %d\n", avion->carburant);
         printf("Consommation : %d\n", avion->consommation);
-        printf("Heure de décollage : %s\n", avion->heure_decollage);
+        printf("Heure de dÃ©collage : %s\n", avion->heure_decollage);
     }
 }
 
@@ -159,107 +169,108 @@ int identifiant_unique(Avion* tete, const char* identifiant) {
     Avion* courant = tete;
     while (courant != NULL) {
         if (strcmp(courant->identifiant, identifiant) == 0) {
-            return 0; // Identifiant déjà utilisé
+            return 0; // Identifiant dÃ©jÃ  utilisÃ©
         }
         courant = courant->suivant;
     }
     return 1; // Identifiant unique
 }
 
-
 void creation_liste_avion(Avion** tete) {
-    int continuer = 1;
-    while (continuer) {
+    int continuer = 1; // ContrÃ´le de la boucle
+    while (continuer == 1) {
         Avion* nouvel_avion = (Avion*)malloc(sizeof(Avion));
+        if (nouvel_avion == NULL) {
+            printf("Erreur d'allocation de mÃ©moire !\n");
+            return;
+        }
         printf("Vous allez ajouter une nouvelle avion.\n");
 
+        // Saisie de l'identifiant
         do {
             printf("Saisir l'identifiant de l'avion (3 lettres majuscules + 3 chiffres, ex: ABC123) : ");
             scanf("%s", nouvel_avion->identifiant);
         } while (!identifiant_valide(nouvel_avion->identifiant));
 
+        // VÃ©rification de l'unicitÃ© de l'identifiant
         if (!identifiant_unique(*tete, nouvel_avion->identifiant)) {
-            printf("Erreur : L'identifiant existe déjà !\n");
+            printf("Erreur : L'identifiant existe dÃ©jÃ  !\n");
             free(nouvel_avion);
             continue;
         }
 
-        // Saisie et vérification du carburant
-        char carburant_str[10];  // Assume the input won't exceed 10 characters
-
+        // Saisie et vÃ©rification du carburant
+        char carburant_str[10];
         do {
             printf("Saisir le carburant de l'avion (nombre entier positif) : ");
             scanf("%s", carburant_str);
         } while (!carburant_valide(carburant_str));
+        int carburant = atoi(carburant_str);
+        nouvel_avion->carburant = carburant;
 
-        int carburant = atoi(carburant_str);  // Convert valid string to integer
-
-        // Saisie et vérification de la consommation
-        char consommation_str[10];  // Assume the input won't exceed 10 characters
-
+        // Saisie et vÃ©rification de la consommation
+        char consommation_str[10];
         do {
             printf("Saisir la consommation de l'avion (nombre entier positif) : ");
             scanf("%s", consommation_str);
         } while (!consommation_valide(consommation_str));
+        int consommation = atoi(consommation_str);
+        nouvel_avion->consommation = consommation;
 
-        int consommation = atoi(consommation_str);  // Convert valid string to integer
-
-        // Saisie et vérification de l'heure de décollage
+        // Saisie et vÃ©rification de l'heure de dÃ©collage
         do {
-            printf("Saisir l'heure de décollage (HHMM) : ");
+            printf("Saisir l'heure de dÃ©collage (HHMM) : ");
             scanf("%s", nouvel_avion->heure_decollage);
         } while (!heure_valide(nouvel_avion->heure_decollage));
 
         nouvel_avion->suivant = NULL;
 
+        // Gestion de la position d'insertion avec 3 tentatives
         int position;
-
         int tentative = 0;
-        int insertion_reussie = 0; // 0 si l'insertion échoue, 1 si elle réussit
+        int insertion_reussie = 0;
 
         while (tentative < 3 && !insertion_reussie) {
             printf("Choisir la position d'insertion (1 pour tete, 0 pour queue, ou autre pour position donnee) : ");
             scanf("%d", &position);
 
-            int returnValue = insere_pos_av(tete, nouvel_avion, position);
-            if ( returnValue == 0) {
+            if (insere_pos_av(tete, nouvel_avion, position) == 0) {
                 tentative++;
                 printf("Position invalide. Il vous reste %d tentatives.\n", 3 - tentative);
             } else {
-                insertion_reussie = 1; // Insertion réussie
+                insertion_reussie = 1; // Insertion rÃ©ussie
             }
         }
 
-        // Si l'insertion échoue après 3 tentatives, on sort de la boucle
+        // Si l'insertion Ã©choue aprÃ¨s 3 tentatives
         if (!insertion_reussie) {
-            printf("Vous avez épuisé toutes vos tentatives. Avion non ajouté.\n");
-            free(nouvel_avion); // Libérer la mémoire allouée pour l'avion
-            continue;
+            printf("Vous avez Ã©puisÃ© toutes vos tentatives. Avion non ajoutÃ©.\n");
+            free(nouvel_avion); // LibÃ©rer la mÃ©moire de l'avion non ajoutÃ©
         }
 
-        printf("Voulez-vous ajouter un autre avion ? (1 pour Oui, n'importe quel autre click pour Non) : ");
-        scanf("%d", &continuer);
+        // Demander Ã  l'utilisateur s'il souhaite continuer
+        printf("Voulez-vous ajouter un autre avion ? (1 pour Oui, 0 pour Non) : ");
+        scanf("%d", &continuer); // Si l'utilisateur entre autre chose que 1, la boucle s'arrÃªte
     }
 }
-
 
 // Fonction pour valider l'identifiant de l'avion
 int identifiant_valide(const char* identifiant) {
     if (strlen(identifiant) != 6) {
-        printf("Erreur : L'identifiant doit comporter exactement 6 caractères (3 lettres suivies de 3 chiffres).\n");
+        printf("Erreur : L'identifiant doit comporter exactement 6 caractÃ¨res (3 lettres suivies de 3 chiffres).\n");
         return 0;
     }
 
     for (int i = 0; i < 3; i++) {
         if (!isupper(identifiant[i])) {
-            printf("Erreur : Les trois premiers caractères doivent être des lettres majuscules (acronyme de la compagnie).\n");
+            printf("Erreur : Les trois premiers caractÃ¨res doivent Ãªtre des lettres majuscules (acronyme de la compagnie).\n");
             return 0;
         }
     }
 
     for (int i = 3; i < 6; i++) {
         if (!isdigit(identifiant[i])) {
-            printf("Erreur : Les trois derniers caractères doivent être des chiffres (numéro de vol).\n");
+            printf("Erreur : Les trois derniers caractÃ¨res doivent Ãªtre des chiffres (numÃ©ro de vol).\n");
             return 0;
         }
     }
@@ -268,7 +279,7 @@ int identifiant_valide(const char* identifiant) {
 }
 
 int carburant_valide(const char* carburant_str) {
-    // Vérifier que tous les caractères de la chaîne sont des chiffres
+    // VÃ©rifier que tous les caractÃ¨res de la chaÃ®ne sont des chiffres
     for (int i = 0; i < strlen(carburant_str); i++) {
         if (!isdigit(carburant_str[i])) {
             printf("Erreur : Le carburant doit etre un nombre entier positif.\n");
@@ -276,10 +287,10 @@ int carburant_valide(const char* carburant_str) {
         }
     }
 
-    // Convertir la chaîne en entier
+    // Convertir la chaÃ®ne en entier
     int carburant = atoi(carburant_str);
 
-    // Vérifier que le carburant est positif
+    // VÃ©rifier que le carburant est positif
     if (carburant > 0) {
         return 1;  // Carburant valide
     } else {
@@ -288,7 +299,7 @@ int carburant_valide(const char* carburant_str) {
     }
 }
 int consommation_valide(const char* consommation_str) {
-    // Vérifier que tous les caractères de la chaîne sont des chiffres
+    // VÃ©rifier que tous les caractÃ¨res de la chaÃ®ne sont des chiffres
     for (int i = 0; i < strlen(consommation_str); i++) {
         if (!isdigit(consommation_str[i])) {
             printf("Erreur : La consommation doit etre un nombre entier positif.\n");
@@ -296,10 +307,10 @@ int consommation_valide(const char* consommation_str) {
         }
     }
 
-    // Convertir la chaîne en entier
+    // Convertir la chaÃ®ne en entier
     int consommation = atoi(consommation_str);
 
-    // Vérifier que la consommation est positive
+    // VÃ©rifier que la consommation est positive
     if (consommation > 0) {
         return 1;  // Consommation valide
     } else {
@@ -309,19 +320,19 @@ int consommation_valide(const char* consommation_str) {
 }
 
 int heure_valide(const char* heure) {
-    // L'heure contient exactement 4 caractères
+    // L'heure contient exactement 4 caractÃ¨res
     if (strlen(heure) != 4) {
         printf("Erreur : L'heure doit contenir exactement 4 caracteres (HHMM).\n");
         return 0;
     }
 
-    // Vérifier que les deux premiers caractères (HH) sont des chiffres
+    // VÃ©rifier que les deux premiers caractÃ¨res (HH) sont des chiffres
     if (!isdigit(heure[0]) || !isdigit(heure[1])) {
         printf("Erreur : Les heures doivent etre des chiffres.\n");
         return 0;
     }
 
-    // Vérifier que les deux derniers caractères (MM) sont des chiffres
+    // VÃ©rifier que les deux derniers caractÃ¨res (MM) sont des chiffres
     if (!isdigit(heure[2]) || !isdigit(heure[3])) {
         printf("Erreur : Les minutes doivent etre des chiffres.\n");
         return 0;
@@ -331,19 +342,46 @@ int heure_valide(const char* heure) {
     int heures = (heure[0] - '0') * 10 + (heure[1] - '0');
     int minutes = (heure[2] - '0') * 10 + (heure[3] - '0');
 
-    // Vérifier que les heures sont entre 00 et 24
+    // VÃ©rifier que les heures sont entre 00 et 24
     if (heures < 0 || heures > 23) {
         printf("Erreur : Les heures doivent etre comprises entre 00 et 23.\n");
         return 0;
     }
 
-    // Vérifier que les minutes sont entre 00 et 59
+    // VÃ©rifier que les minutes sont entre 00 et 59
     if (minutes < 0 || minutes > 59) {
         printf("Erreur : Les minutes doivent etre comprises entre 00 et 59.\n");
         return 0;
     }
 
-    // Si toutes les vérifications sont correctes
+    // Si toutes les vÃ©rifications sont correctes
     return 1;
 }
+///////////////////////////
 
+// Fonction pour ajouter un avion Ã  la liste
+void ajouter_avion(Avion** tete, Avion* nouvel_avion) {
+    if (*tete == NULL) {
+        // Si la liste est vide, le nouvel avion devient le premier Ã©lÃ©ment
+        *tete = nouvel_avion;
+    } else {
+        // Sinon, on ajoute le nouvel avion Ã  la fin de la liste
+        Avion* temp = *tete;
+        while (temp->suivant != NULL) {
+            temp = temp->suivant;
+        }
+        temp->suivant = nouvel_avion;
+    }
+}
+
+// Fonction pour supprimer les avions d'une compagnie donnÃ©e
+void suppression_avions_compagnie(Avion** tete, const char* prefixe) {
+    Avion* courant = *tete;
+    while (courant != NULL) {
+        Avion* suivant = courant->suivant;
+        if (strncmp(courant->identifiant, prefixe, 3) == 0) {
+            suppression_av_donne(tete, courant->identifiant);
+        }
+        courant = suivant;
+    }
+}
