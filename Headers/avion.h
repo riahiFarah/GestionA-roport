@@ -1,4 +1,4 @@
-// avion.h : contient les déclarations des structures et prototypes de fonctions.
+// avion.h : contient les dÃ©clarations des structures et prototypes de fonctions.
 
 #ifndef AVION_H
 #define AVION_H
@@ -37,5 +37,9 @@ int identifiant_valide(const char* identifiant);
 int carburant_valide(const char* carburant_str);
 int consommation_valide(const char* consommation_str);
 int heure_valide(const char* heure);
+
+
+void ajouter_avion(Avion** tete, Avion* nouvel_avion);
+void suppression_avions_compagnie(Avion** tete, const char* prefixe);
 
 #endif // AVION_H
